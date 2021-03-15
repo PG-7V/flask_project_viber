@@ -1,2 +1,4 @@
 .idea/
 venv/
+.~lock.for_pdf.csv#
+__pycache__/
