@@ -4,6 +4,7 @@ from viberbot import Api
 from viberbot.api.bot_configuration import BotConfiguration
 import logging
 import csv
+import time
 from viberbot.api.viber_requests import ViberConversationStartedRequest
 from viberbot.api.viber_requests import ViberMessageRequest
 from viberbot.api.messages import (
@@ -92,35 +93,48 @@ def incoming():
     # PARA = False
 
     if isinstance(viber_request, ViberMessageRequest):
-        print(viber_request)
+        # print(viber_request)
         if viber_request.message.text == 'Настройки параметров':
             viber.send_messages(viber_request.sender.id, [
                 TextMessage(text='Выберите параметры отображения.', keyboard={
             "DefaultHeight": True,
             "BgColor": "#FFFFFF",
             "Type": "keyboard",
-            "Buttons": [get_buttons('Пo умолчанию'), get_buttons('Отобразить все')]
+            "Buttons": [get_buttons('Артикул и Размеры'), get_buttons('Артикул и Размеры + Цена'),
+                        get_buttons('Артикул, Размеры, Состав + Цена')]
                 })])
-        elif viber_request.message.text == 'Пo умолчанию':
+        elif viber_request.message.text == 'Артикул и Размеры':
 
             global para
             para = 0
             viber.send_messages(viber_request.sender.id, [
-                TextMessage(text='Установлены параметры "По умолчанию". Введите Артикул.', keyboard={
+                TextMessage(text='Установлены параметры "Артикул и Размеры". Введите Артикул.', keyboard={
                     "DefaultHeight": True,
                     "BgColor": "#FFFFFF",
                     "Type": "keyboard",
-                    "Buttons": [get_buttons('Пo умолчанию'), get_buttons('Отобразить все')]
+                    "Buttons": [get_buttons('Артикул и Размеры'), get_buttons('Артикул и Размеры + Цена'),
+                                get_buttons('Артикул, Размеры, Состав + Цена')]
                 })])
-        elif viber_request.message.text == 'Отобразить все':
+        elif viber_request.message.text == 'Артикул и Размеры + Цена':
             # global para
             para = 1
             viber.send_messages(viber_request.sender.id, [
-                TextMessage(text='Установлены параметры "Отобразить все". Введите Артикул.', keyboard={
+                TextMessage(text='Установлены параметры "Артикул и Размеры + Цена". Введите Артикул.', keyboard={
                     "DefaultHeight": True,
                     "BgColor": "#FFFFFF",
                     "Type": "keyboard",
-                    "Buttons": [get_buttons('Пo умолчанию'), get_buttons('Отобразить все')]
+                    "Buttons": [get_buttons('Артикул и Размеры'), get_buttons('Артикул и Размеры + Цена'), get_buttons('Отобразить все все')]
+                })])
+        elif viber_request.message.text == 'Артикул, Размеры, Состав + Цена':
+            # global para
+            para = 2
+            viber.send_messages(viber_request.sender.id, [
+                TextMessage(text='Установлены параметры "Артикул, Размеры, Состав + Цена". Введите Артикул.', keyboard={
+                    "DefaultHeight": True,
+                    "BgColor": "#FFFFFF",
+                    "Type": "keyboard",
+                    "Buttons": [get_buttons('Артикул и Размеры'), get_buttons('Артикул и Размеры + Цена'),
+                                get_buttons('Артикул, Размеры, Состав + Цена')]
                 })])
         else:
             para=para
@@ -135,9 +149,13 @@ def incoming():
             uchar = udata['char']
             if ulink:
                 viber.send_messages(viber_request.sender.id, [PictureMessage(media=ulink)])
-                text_message = f'{uart_if}\n{uchar}'
-                if para:
-                    text_message = f'{uart_if}\n{uchar}\nЦена {uprice}\n{udescr}'
+                text_message = f'{uart_if}\n{udescr}'
+                time.sleep(0.5)
+                if para == 1:
+                    text_message = f'{uart_if}\n{udescr}'
+                elif para == 2:
+                    text_message = f'{uart_if}\n{udescr}\n{uchar}'
+
             else:
                 text_message = f'Артикул {viber_request.message.text} отсутствует.'
             viber.send_messages(viber_request.sender.id, [
@@ -145,8 +163,19 @@ def incoming():
                     "DefaultHeight": True,
                     "BgColor": "#FFFFFF",
                     "Type": "keyboard",
-                    "Buttons": [get_buttons('Пo умолчанию'), get_buttons('Отобразить все')]
+                    "Buttons": [get_buttons('Артикул и Размеры'), get_buttons('Артикул и Размеры + Цена'),
+                                get_buttons('Артикул, Размеры, Состав + Цена')]
                 })])
+            time.sleep(0.5)
+            if ulink and para:
+                viber.send_messages(viber_request.sender.id, [
+                    TextMessage(text=f'Цена {uprice}', keyboard={
+                        "DefaultHeight": True,
+                        "BgColor": "#FFFFFF",
+                        "Type": "keyboard",
+                        "Buttons": [get_buttons('Артикул и Размеры'), get_buttons('Артикул и Размеры + Цена'),
+                                    get_buttons('Артикул, Размеры, Состав + Цена')]
+                    })])
 
 
     elif isinstance(viber_request, ViberConversationStartedRequest):
