@@ -119,7 +119,7 @@ def get_buttons(textd):
     }
 
 
-@application.route('/4d09a6058027d05d-dba5d816e649c704-c151f2937e2b0164/', methods=['POST'])
+@application.route(f'/{config.token}/', methods=['POST'])
 def incoming():
     global para
     global rows
