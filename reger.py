@@ -3,6 +3,7 @@ from flask_sslify import SSLify
 from viberbot import Api
 from viberbot.api.bot_configuration import BotConfiguration
 import logging
+import config
 import csv
 import time
 from viberbot.api.viber_requests import ViberConversationStartedRequest
@@ -23,7 +24,7 @@ rows = []
 viber = Api(BotConfiguration(
     name='createPDF',
     avatar='',
-    auth_token='4d09a6058027d05d-dba5d816e649c704-c151f2937e2b0164'
+    auth_token=config.token
 ))
 
 

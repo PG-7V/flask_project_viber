@@ -2,3 +2,4 @@
 venv/
 .~lock.for_pdf.csv#
 __pycache__/
+config.py
