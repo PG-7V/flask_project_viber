@@ -8,6 +8,4 @@ if sys.executable != INTERP:
 
 sys.path.append(os.getcwd())
 
-from reger import application
-
-    
+from reger_R import application
