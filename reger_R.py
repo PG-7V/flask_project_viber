@@ -7,7 +7,7 @@ import config
 import json
 import requests
 import time
-from viberbot.api.viber_requests import ViberConversationStartedRequest
+from viberbot.api.viber_requests import ViberConversationStartedRequest, ViberFailedRequest
 
 from viberbot.api.viber_requests import ViberMessageRequest
 from viberbot.api.messages import (
@@ -54,7 +54,7 @@ def parse(data_j):
             descr = product['descr']  # Размер
         except:
             descr = ''
-        if int(product['price']):
+        if product['price']:
             price = float(round((float(product['price'])), 2))
             price = f'{price}'
         else:
@@ -80,7 +80,7 @@ def parse(data_j):
 def search_info(art, func):
     skus = []
     for i in func:
-        if art.strip() in func['sku']:
+        if art.strip() == i['sku'].strip():
             skus.append(i)
 
     return skus
@@ -135,15 +135,23 @@ def incoming():
             # global para
             para = 2
             v_r('Установлены параметры "Артикул, Размеры, Состав + Цена". Введите Артикул.')
+
+        elif isinstance(viber_request, ViberFailedRequest):
+            logging.getLogger().warn(
+                "client failed receiving message. failure: {0}".format(viber_request))
+
+
+
         else:
             # url_j = 'https://store.tildacdn.com/api/getproductslist/?storepartuid=133030198409&recid=132953886&getparts=true&getoptions=true&size=500'
             # data_j = requests.get(url_j).json()
-            data_j = json.load(open('cat.json'))
+            with open('cat.json') as f_j:
+                data_j = json.load(f_j)
 
-            if viber_request.message.text == 'Все в наличии':
-                if not rows:
+                if viber_request.message.text == 'Все в наличии':
+                    rows = []
+                    # data_j = json.load(open('cat.json'))
                     rows = parse(data_j)  # запрос json
-                for _ in range(len(rows)):
                     r = rows[0]
                     llink = r['link']
                     lart = r['title']
@@ -153,46 +161,124 @@ def incoming():
                         lprice = r['price']
                     except:
                         lprice = ''
-                    time.sleep(1)
-                    viber.send_messages(viber_request.sender.id, [PictureMessage(media=llink)])
-                    if para == 1:
-                        ltext_message = f'{lart}\n{ldescr}'
-                    elif para == 2:
-                        ltext_message = f'{lart}\n{ldescr}\n{lchar}'
-                    time.sleep(1)
-                    v_r(ltext_message)
-                    time.sleep(1)
-                    if para:
-                        v_r(f'Цена {lprice}')
+                    time.sleep(2)
+                    viber.send_messages(viber_request.sender.id, [PictureMessage(media=llink, keyboard={
+                        "DefaultHeight": True,
+                        "BgColor": "#FFFFFF",
+                        "Type": "keyboard",
+                        "Buttons": [get_buttons('Далее'),
+                                    get_buttons('Все в наличии')]
+                    })])
+                    print('all send media')
+                    # if para == 1:
+                    #     ltext_message = f'{lart}\n{ldescr}'
+                    # elif para == 2:
+                    #     ltext_message = f'{lart}\n{ldescr}\n{lchar}'
+                    # time.sleep(2)
+                    # viber.send_messages(viber_request.sender.id, [
+                    #     TextMessage(text=ltext_message, keyboard={
+                    #         "DefaultHeight": True,
+                    #         "BgColor": "#FFFFFF",
+                    #         "Type": "keyboard",
+                    #         "Buttons": [get_buttons('Далее'),
+                    #                     get_buttons('Все в наличии')]
+                    #     })])
+                    # print('all send first text')
+                    # time.sleep(2)
+                    # if para:
+                    #     viber.send_messages(viber_request.sender.id, [
+                    #         TextMessage(text=f'Цена {lprice}', keyboard={
+                    #             "DefaultHeight": True,
+                    #             "BgColor": "#FFFFFF",
+                    #             "Type": "keyboard",
+                    #             "Buttons": [get_buttons('Далее'),
+                    #                         get_buttons('Все в наличии')]
+                    #         })])
+                    # print('all send second text')
                     time.sleep(2)
                     rows.pop(0)
                     if not rows:
                         v_r('Все данные выгружены. Сформируйте новый запрос.')
-            else:
-                udatas = search_info(viber_request.message.text.strip(), parse(data_j))
-                for udata in udatas:
-                    uart_if = udata['title']
-                    udescr = udata['descr']
-                    try:
-                        uprice = udata['price']
-                    except:
-                        uprice = ''
-                    ulink = udata['link']
-                    uchar = udata['charter']
-                    if ulink:
-                        viber.send_messages(viber_request.sender.id, [PictureMessage(media=ulink)])
-                        text_message = f'{uart_if}\n{udescr}'
-                        time.sleep(0.5)
+
+                elif viber_request.message.text == 'Далее':
+                    if rows:
+                        r = rows[0]
+                        llink = r['link']
+                        lart = r['title']
+                        ldescr = r['descr']
+                        lchar = r['character']
+                        try:
+                            lprice = r['price'].split('.')[0]
+                        except:
+                            lprice = ''
+                        time.sleep(2)
+                        viber.send_messages(viber_request.sender.id, [PictureMessage(media=llink, keyboard={
+                            "DefaultHeight": True,
+                            "BgColor": "#FFFFFF",
+                            "Type": "keyboard",
+                            "Buttons": [get_buttons('Далее'),
+                                        get_buttons('Настройки параметров'),
+                                        get_buttons('Все в наличии')]
+                        })])
+                        print('next send media')
                         if para == 1:
-                            text_message = f'{uart_if}\n{udescr}'
+                            ltext_message = f'{lart}\n{ldescr}'
                         elif para == 2:
-                            text_message = f'{uart_if}\n{udescr}\n{uchar}'
-                    else:
-                        text_message = f'Артикул {viber_request.message.text} отсутствует.'
-                    v_r(text_message)
-                    time.sleep(0.5)
-                    if ulink and para:
-                        v_r(f'Цена {uprice}')
+                            ltext_message = f'{lart}\n{ldescr}\n{lchar}'
+                        time.sleep(2)
+                        viber.send_messages(viber_request.sender.id, [
+                            TextMessage(text=ltext_message, keyboard={
+                                "DefaultHeight": True,
+                                "BgColor": "#FFFFFF",
+                                "Type": "keyboard",
+                                "Buttons": [get_buttons('Далее'),
+                                            get_buttons('Настройки параметров'),
+                                            get_buttons('Все в наличии')]
+                            })])
+                        print('next send first para')
+                        time.sleep(2)
+                        if para:
+                            viber.send_messages(viber_request.sender.id, [
+                                TextMessage(text=f'Цена {lprice}', keyboard={
+                                    "DefaultHeight": True,
+                                    "BgColor": "#FFFFFF",
+                                    "Type": "keyboard",
+                                    "Buttons": [get_buttons('Далее'),
+                                                get_buttons('Настройки параметров'),
+                                                get_buttons('Все в наличии')]
+                                })])
+                        print('next send second para')
+                        time.sleep(5)
+                        rows.pop(0)
+
+
+                else:
+                    # data_j = json.load(open('cat.json'))
+                    udatas = search_info(viber_request.message.text.strip(), parse(data_j))
+                    for udata in udatas:
+                        time.sleep(5)
+                        uart_if = udata['title']
+                        udescr = udata['descr']
+                        try:
+                            uprice = udata['price']
+                        except:
+                            uprice = ''
+                        ulink = udata['link']
+                        uchar = udata['character']
+                        if ulink:
+                            viber.send_messages(viber_request.sender.id, [PictureMessage(media=ulink)])
+                            text_message = f'{uart_if}\n{udescr}'
+                            time.sleep(7)
+                            if para == 1:
+                                text_message = f'{uart_if}\n{udescr}'
+                            elif para == 2:
+                                text_message = f'{uart_if}\n{udescr}\n{uchar}'
+                        else:
+                            text_message = f'Артикул {viber_request.message.text} отсутствует.'
+                        v_r(text_message)
+                        time.sleep(5)
+                        if ulink and para:
+                            v_r(f'Цена {uprice}')
     elif isinstance(viber_request, ViberConversationStartedRequest):
         keyboard = {
             "DefaultHeight": True,

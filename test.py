@@ -1,5 +1,7 @@
 import json
 
+
+wits
 data_j = json.load(open('cat.json'))
 
 for product in data_j['products']:
