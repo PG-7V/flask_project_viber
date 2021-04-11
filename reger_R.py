@@ -19,6 +19,7 @@ from viberbot.api.messages import (
 )
 
 
+
 application = Flask(__name__)
 sslify = SSLify(application)
 para = 0
