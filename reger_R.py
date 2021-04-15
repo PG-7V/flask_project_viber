@@ -37,7 +37,7 @@ def parse(data_j):
         try:
             link = json.loads(product['gallery'])[0]['img']
         except:
-            print('Error parse "gallery"')
+            # print('Error parse "gallery"')
             continue
         try:
             title = product['title'].strip()  #Артикул
@@ -84,7 +84,6 @@ def search_info(art, func):
     for i in func:
         if art.strip() == i['sku'].strip():
             skus.append(i)
-
     return skus
 
 
@@ -110,27 +109,12 @@ def incoming():
         messege_tokens = []
     url_j = 'https://store.tildacdn.com/api/getproductslist/?storepartuid=133030198409&recid=132953886&getparts=true&getoptions=true&size=500'
 
-    #logging.getLogger().debug("received request. post data: {0}".format(request.get_data()))
-    # every viber message is signed, you can verify the signature using this method
     if not viber.verify_signature(request.get_data(), request.headers.get('X-Viber-Content-Signature')):
         return Response(status=403)
 
     viber_request = viber.parse_request(request.get_data().decode('utf8'))
-    # def v_r(texxt):
-    #     viber.send_messages(viber_request.sender.id, [
-    #         TextMessage(text=texxt, keyboard={
-    #             "DefaultHeight": True,
-    #             "BgColor": "#FFFFFF",
-    #             "Type": "keyboard",
-    #             "Buttons": [get_buttons('Артикул и Размеры'),
-    #                         get_buttons('Артикул и Размеры + Цена'),
-    #                         get_buttons('Артикул, Размеры, Состав + Цена'),
-    #                         get_buttons('Все в наличии')]
-    #         })])
-
     if isinstance(viber_request, ViberFailedRequest):
         logging.getLogger().warning("client failed receiving message. failure: {0}".format(viber_request))
-
     elif isinstance(viber_request, ViberMessageRequest):
         if viber_request.message.text == 'Настройки параметров':
             vrt = viber_request.message_token
@@ -146,7 +130,6 @@ def incoming():
                                     get_buttons('Все в наличии')]
                     })])
                 messege_tokens.append(vrt)
-            #v_r('Выберите параметры отображения.')
         elif viber_request.message.text == 'Артикул и Размеры':
             vrt = viber_request.message_token
             if not vrt in messege_tokens:
@@ -162,7 +145,6 @@ def incoming():
                                     get_buttons('Все в наличии')]
                     })])
                 messege_tokens.append(vrt)
-            #v_r('Установлены параметры "Артикул и Размеры". Введите Артикул.')
         elif viber_request.message.text == 'Артикул и Размеры + Цена':
             vrt = viber_request.message_token
             if not vrt in messege_tokens:
@@ -178,9 +160,7 @@ def incoming():
                                     get_buttons('Все в наличии')]
                     })])
                 messege_tokens.append(vrt)
-                #v_r('Установлены параметры "Артикул и Размеры + Цена". Введите Артикул.')
         elif viber_request.message.text == 'Артикул, Размеры, Состав + Цена':
-            # global para
             vrt = viber_request.message_token
             if not vrt in messege_tokens:
                 para = 2
@@ -195,28 +175,10 @@ def incoming():
                                     get_buttons('Все в наличии')]
                     })])
                 messege_tokens.append(vrt)
-            #v_r('Установлены параметры "Артикул, Размеры, Состав + Цена". Введите Артикул.')
-
-        # elif isinstance(viber_request, ViberFailedRequest):
-        #     logging.getLogger().warn(
-        #         "client failed receiving message. failure: {0}".format(viber_request))
-
-
-
-        # else:
-            # url_j = 'https://store.tildacdn.com/api/getproductslist/?storepartuid=133030198409&recid=132953886&getparts=true&getoptions=true&size=500'
-            # data_j = requests.get(url_j).json()
-            # with open('cat.json') as f_j:
-            #     data_j = json.load(f_j)
-
         elif viber_request.message.text == 'Все в наличии':
-            # messege_tokens = []
             vrt = viber_request.message_token
             if not vrt in messege_tokens:
                 rows = []
-                # data_j = json.load(open('cat.json'))
-                # with open('cat.json') as f_j:  # парсинг данных из файла.
-                #     data_j = json.load(f_j)
                 data_j = requests.get(url_j).json()
                 rows = parse(data_j)  # запрос json
                 r = rows[0]
@@ -236,7 +198,7 @@ def incoming():
                     "Buttons": [get_buttons('Далее'),
                                 get_buttons('Все в наличии')]
                 })])
-                print('all send media')
+                # print('all send media')
                 messege_tokens.append(vrt)
                 if para == 1:
                     ltext_message = f'{lart}\n{ldescr}'
@@ -253,7 +215,6 @@ def incoming():
                         "Buttons": [get_buttons('Далее'),
                                     get_buttons('Все в наличии')]
                     })])
-                print('all send first text')
                 messege_tokens.append(viber_request.message_token)
                 time.sleep(0.5)
                 if para:
@@ -266,7 +227,6 @@ def incoming():
                                         get_buttons('Все в наличии')]
                         })])
                     messege_tokens.append(viber_request.message_token)
-                print('all send second text')
                 time.sleep(0.5)
                 rows.pop(0)
 
@@ -282,27 +242,10 @@ def incoming():
                                         get_buttons('Все в наличии')]
                         })])
                     messege_tokens.append(viber_request.message_token)
-                #v_r('Все данные выгружены. Сформируйте новый запрос.')
 
         elif viber_request.message.text == 'Далее':
-
-            # with open('cat_tok', 'w') as file_data:
-            #     file_data.write(f'''{viber_request}''')
             vrt = viber_request.message_token
             if not vrt in messege_tokens:
-                viber.send_messages(viber_request.sender.id, [
-                    TextMessage(text=f'''{viber_request}''', keyboard={
-                        "DefaultHeight": True,
-                        "BgColor": "#FFFFFF",
-                        "Type": "keyboard",
-                        "Buttons": [get_buttons('Артикул и Размеры'),
-                                    get_buttons('Артикул и Размеры + Цена'),
-                                    get_buttons('Артикул, Размеры, Состав + Цена'),
-                                    get_buttons('Все в наличии')]
-                    })])
-                messege_tokens.append(vrt)
-                # messege_tokens.append(vrt)
-                # loa_d = 1
                 if rows:
                     r = rows[0]
                     llink = r['link']
@@ -331,7 +274,6 @@ def incoming():
                         ltext_message = f'{lart}\n{ldescr}\n{lchar}'
                     else:
                         ltext_message = f'{lart}\n{ldescr}'
-                    print(ltext_message)
                     time.sleep(1)
                     viber.send_messages(viber_request.sender.id, [
                         TextMessage(text=ltext_message, keyboard={
@@ -342,7 +284,6 @@ def incoming():
                                         get_buttons('Настройки параметров'),
                                         get_buttons('Все в наличии')]
                         })])
-                    print(f'next send first para{ltext_message}')
                     messege_tokens.append(viber_request.message_token)
                     time.sleep(0.5)
                     if para:
@@ -355,13 +296,9 @@ def incoming():
                                             get_buttons('Настройки параметров'),
                                             get_buttons('Все в наличии')]
                             })])
-                    print('next send second para')
                     time.sleep(0.5)
                     rows.pop(0)
-                    print(f'{viber_request.message_token}')
                     messege_tokens.append(viber_request.message_token)
-                    print(messege_tokens)
-
                 else:
                     viber.send_messages(viber_request.sender.id, [
                         TextMessage(text='Все данные выгружены. Сформируйте новый запрос.', keyboard={
@@ -375,16 +312,10 @@ def incoming():
                         })])
                     messege_tokens = []
                     messege_tokens.append(viber_request.message_token)
-                    #v_r('Все данные выгружены. Сформируйте новый запрос.')
-
-
         else:  # Поиск отдельного артикула.
             vrt = viber_request.message_token
             if not vrt in messege_tokens:
                 rows = []
-                # data_j = json.load(open('cat.json'))
-                # with open('cat.json') as f_j:
-                #     data_j = json.load(f_j)
                 data_j = requests.get(url_j).json()
                 r_ows = parse(data_j)  # запрос json
                 for r_ow in r_ows:
@@ -409,7 +340,6 @@ def incoming():
                                     get_buttons('Все в наличии')]
                     })])
                     messege_tokens.append(vrt)
-                    print('all send media')
                     if para == 1:
                         ltext_message = f'{lart}\n{ldescr}'
                     elif para == 2:
@@ -425,7 +355,6 @@ def incoming():
                             "Buttons": [get_buttons('Далее'),
                                         get_buttons('Все в наличии')]
                         })])
-                    print('all send first text')
                     messege_tokens.append(viber_request.message_token)
                     time.sleep(0.5)
                     if para:
@@ -437,7 +366,6 @@ def incoming():
                                 "Buttons": [get_buttons('Далее'),
                                             get_buttons('Все в наличии')]
                             })])
-                    print('all send second text')
                     time.sleep(0.5)
                     rows.pop(0)
                     messege_tokens.append(viber_request.message_token)
@@ -489,7 +417,6 @@ def incoming():
             viber.send_messages(viber_request.user.id, [
                 TextMessage(text="Здравствуйте!\n Нажмите\n'Настройки параметров'", keyboard=keyboard)
             ])
-
             messege_tokens.append(vrt)
 
     return Response(status=200)
