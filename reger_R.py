@@ -107,7 +107,7 @@ def incoming():
     global messege_tokens
     if len(messege_tokens) > 5000:
         messege_tokens = []
-    url_j = 'https://store.tildacdn.com/api/getproductslist/?storepartuid=133030198409&recid=132953886&getparts=true&getoptions=true&size=500'
+    url_j = config.url
 
     if not viber.verify_signature(request.get_data(), request.headers.get('X-Viber-Content-Signature')):
         return Response(status=403)
