@@ -1,0 +1,1 @@
+ViberMessageRequest [event_type=message, timestamp=1618482859044, message_token=5563430031464765590, sender=UserProfile[name=Дмитрий Алексеев, avatar=None, id=RLdLVUjuAGtZEyODiNavwg==, country=BY, language=ru, api_version=10, message=TextMessage [tracking_data=None, keyboard=None, min_api_version=None, text=Далее], chat_id=None, reply_type=None, silent=False]

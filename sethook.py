@@ -6,7 +6,7 @@ hook = 'https://chatapi.viber.com/pa/set_webhook'
 headers = {'X-Viber-Auth-Token': auth_token}
 
 
-sen = dict(url='https://98b9f74c3012.ngrok.io/4d09a6058027d05d-dba5d816e649c704-c151f2937e2b0164/',
+sen = dict(url='https://16f99e210478.ngrok.io/4d09a6058027d05d-dba5d816e649c704-c151f2937e2b0164/',
            event_types = ['unsubscribed', 'conversation_started', 'message', 'seen', 'delivered'])
 # sen - это body запроса для отправки к backend серверов viber
 #seen, delivered - можно убрать, но иногда маркетологи хотят знать,
