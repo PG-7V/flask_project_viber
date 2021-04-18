@@ -35,7 +35,8 @@ def parse(data_j):
     list_info = []
     for product in data_j['products']:
         try:
-            link = json.loads(product['gallery'])[0]['img']
+            # link = json.loads(product['gallery'])[0]['img']
+            links = json.loads(product['gallery'])
         except:
             # print('Error parse "gallery"')
             continue
@@ -67,7 +68,8 @@ def parse(data_j):
             character = ''
 
 
-        info_f = {'link': link,
+        info_f = {
+                  'links': links,
                   'sku': sku,
                   'title': title,
                   'quantity': quantity,
